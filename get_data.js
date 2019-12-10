@@ -1,5 +1,6 @@
 const axios = require("axios").default;
 const keys = require("./key.js");
+var fs = require("fs");
 const limit = 3000;
 
 const subject1 = "democrat";
@@ -21,7 +22,11 @@ let articles = {};
 feedArticles(url1, subject1).then(x =>
   feedArticles(url2, subject2).then(x =>
     feedArticles(url3, subject3).then(x => {
-      var fs = require("fs");
+      fs.writeFile(`test.txt`, JSON.stringify(articles), function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
       for (var key in articles) {
         fs.writeFile(`${key}.csv`, convertToCSV(articles[key]), function(err) {
           if (err) {
@@ -37,16 +42,16 @@ feedArticles(url1, subject1).then(x =>
 
 async function feedArticles(url, subject) {
   let foundarticles;
-  let res;
-  res = await axios.get(_url(subject, 0));
+  const res = await axios.get(_url(subject, 0));
   foundarticles = res.data.response.docs;
-  res = await axios.get(_url(subject, 1));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  res = await axios.get(_url(subject, 2));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  foundarticles = cleanArticles(foundarticles, subject);
-  articles[subject] = foundarticles;
-  console.log(foundarticles.length, "---1");
+  // console.log(foundarticles, "))))) 1");
+  const res2 = await axios.get(_url(subject, 1));
+  foundarticles = foundarticles.concat(res2.data.response.docs);
+  console.log(foundarticles, "------ 2");
+  const res3 = await axios.get(_url(subject, 2));
+  foundarticles = foundarticles.concat(res3.data.response.docs);
+  articles[subject] = cleanArticles(foundarticles, subject);
+  console.log(articles, "---1");
   return foundarticles;
 }
 
@@ -69,13 +74,16 @@ function convertToCSV(json) {
   var replacer = function(key, value) {
     return value === null ? "" : value;
   };
+  console.log(fields, "fields -------"), json, "json -------";
   var csv = json.map(row => {
+    console.log("row", row);
     return fields
       .map(fieldName => {
-        JSON.stringify(row[fieldName], replacer);
+        return JSON.stringify(row[fieldName], replacer);
       })
       .join(",");
   });
+  console.log(csv, "csv -------");
   csv.unshift(fields.join(",")); // add header column
   console.log(csv.join("\r\n"));
   const csvformat = csv.join("\r\n");

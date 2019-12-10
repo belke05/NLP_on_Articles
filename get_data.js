@@ -40,19 +40,28 @@ feedArticles(subject1).then(x =>
 async function feedArticles(subject) {
   let foundarticles;
   let res;
-  res = await axios.get(_url(subject, 0));
-  foundarticles = res.data.response.docs;
-  res = await axios.get(_url(subject, 1));
-  foundarticles = foundarticles.concat(re.data.response.docs);
-  res = await axios.get(_url(subject, 2));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  res = await axios.get(_url(subject, 3));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  res = await axios.get(_url(subject, 4));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  res = await axios.get(_url(subject, 5));
-  foundarticles = foundarticles.concat(res.data.response.docs);
-  articles[subject] = cleanArticles(foundarticles, subject);
+  try {
+    res = await axios.get(_url(subject, 0));
+    foundarticles = res.data.response.docs;
+    await delay(10000);
+    res = await axios.get(_url(subject, 1));
+    foundarticles = foundarticles.concat(res.data.response.docs);
+    await delay(10000);
+    res = await axios.get(_url(subject, 2));
+    foundarticles = foundarticles.concat(res.data.response.docs);
+    await delay(10000);
+    res = await axios.get(_url(subject, 3));
+    foundarticles = foundarticles.concat(res.data.response.docs);
+    await delay(10000);
+    res = await axios.get(_url(subject, 4));
+    foundarticles = foundarticles.concat(res.data.response.docs);
+    await delay(10000);
+    res = await axios.get(_url(subject, 5));
+    foundarticles = foundarticles.concat(res.data.response.docs);
+    articles[subject] = cleanArticles(foundarticles, subject);
+  } catch (e) {
+    console.error(e, "error");
+  }
   return foundarticles;
 }
 
@@ -84,4 +93,9 @@ function convertToCSV(json) {
   console.log(csv.join("\r\n"));
   const csvformat = csv.join("\r\n");
   return csvformat;
+}
+
+async function delay(ms) {
+  // return await for better async stack trace support in case of errors.
+  return await new Promise(resolve => setTimeout(resolve, ms));
 }

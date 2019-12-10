@@ -1,6 +1,6 @@
 const axios = require("axios").default;
 const keys = require("./key.js");
-const limit = 100;
+const limit = 3000;
 
 const subject1 = "democrat";
 const subject2 = "republican";
@@ -10,6 +10,8 @@ let page_number1 = 0;
 let page_number2 = 0;
 let page_number3 = 0;
 
+const _url = (subject, page) =>
+  `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject}&page=${page}&api-key=${keys}`;
 const url1 = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject1}&limit=${limit}&api-key=${keys}`;
 const url2 = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject2}&limit=${limit}&api-key=${keys}`;
 const url3 = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject3}&limit=${limit}&api-key=${keys}`;
@@ -34,11 +36,18 @@ feedArticles(url1, subject1).then(x =>
 // feedArticles(url3, subject3);
 
 async function feedArticles(url, subject) {
-  let res = await axios.get(url);
-  let foundarticles = res.data.response.docs;
+  let foundarticles;
+  let res;
+  res = await axios.get(_url(subject, 0));
+  foundarticles = res.data.response.docs;
+  res = await axios.get(_url(subject, 1));
+  foundarticles = foundarticles.concat(res.data.response.docs);
+  res = await axios.get(_url(subject, 2));
+  foundarticles = foundarticles.concat(res.data.response.docs);
   foundarticles = cleanArticles(foundarticles, subject);
   articles[subject] = foundarticles;
-  return true;
+  console.log(foundarticles.length, "---1");
+  return foundarticles;
 }
 
 function cleanArticles(articles, subject) {
@@ -60,10 +69,10 @@ function convertToCSV(json) {
   var replacer = function(key, value) {
     return value === null ? "" : value;
   };
-  var csv = json.map(function(row) {
+  var csv = json.map(row => {
     return fields
-      .map(function(fieldName) {
-        return JSON.stringify(row[fieldName], replacer);
+      .map(fieldName => {
+        JSON.stringify(row[fieldName], replacer);
       })
       .join(",");
   });

@@ -1,29 +1,24 @@
 const axios = require("axios").default;
 const keys = require("./key.js");
 var fs = require("fs");
-const limit = 3000;
 
 const subject1 = "democrat";
 const subject2 = "republican";
 const subject3 = "trump";
 
-let page_number1 = 0;
-let page_number2 = 0;
-let page_number3 = 0;
-
 const _url = (subject, page) =>
-  `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject}&page=${page}&api-key=${keys}`;
+  `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${subject}&page=${page}&api-key=${keys.APIKEYNYTIMES}`;
+
+const _url2 = subject =>
+  `https://newsapi.org/v2/everything?q=${subject}&apiKey=${keys.APIKEYNEWSAPI}`;
+const _url3 = subject =>
+  `https://gnews.io/api/v3/search?q=${subject}&token=${keys.APIKEYGNEWSSAPI}`;
 
 let articles = {};
 
 feedArticles(subject1).then(x =>
   feedArticles(subject2).then(x =>
     feedArticles(subject3).then(x => {
-      fs.writeFile(`test.txt`, JSON.stringify(articles), function(err) {
-        if (err) {
-          console.log(err);
-        }
-      });
       for (var key in articles) {
         fs.writeFile(`${key}.csv`, convertToCSV(articles[key]), function(err) {
           if (err) {
@@ -34,8 +29,6 @@ feedArticles(subject1).then(x =>
     })
   )
 );
-// feedArticles(url2, subject2);
-// feedArticles(url3, subject3);
 
 async function feedArticles(subject) {
   let foundarticles;
